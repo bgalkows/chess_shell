@@ -13,7 +13,7 @@ Open a Terminal (OSX/LINUX) or CMD (WINDOWS) and follow the below instructions.
 
 We have provided a requirements.txt for you to setup your **python3 environment.**
 
-Change directories to flappy bird folder
+Change directories to chess AI folder
 ```
 cd /path/to/chess/folder/
 ```
