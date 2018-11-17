@@ -46,7 +46,6 @@ virtualenv chessenv
 chessenv\Scripts\activate.bat
 
 pip install -r requirements.txt
-
 ```
 ### RUN (When code is completed)
 
