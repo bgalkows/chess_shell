@@ -12,6 +12,8 @@ boardfix = [
 ];
 alphaValueOffset = 0x41;
 
+
+
 # Helper functions
 def index2pos(index):
     return (index%8,math.floor(index/8)*8);
@@ -74,17 +76,9 @@ class piece:
         
     def canMoveTo(self,pos):
         return pos in self.validMoves;
-        '''if(self.board.firstEncounter(self.pos,pos) == pos):
-            #if settning som ser om det er en brikke i mellom
-            #brikkens posisjon og destinasjonen
-            p2 = self.board.getPieceAt(pos);
-            if(p2):
-                return self.team != p2.team;
-            return True;
-        return False;'''
     
     def kill(self):
-        # Logic runs when the piece is capturing
+        # Logic runs when the piece is captured
         pass;
         
     def update(self):
@@ -98,6 +92,12 @@ class piece:
         pass;
     def __str__(self):
         return self.char[self.team%2];
+
+    # TODO: Add safeMoveTo for pieces
+    def safeMoveTo(self, pos):
+        self.board.setPieceAt(pos, self);
+        self.board.setPieceAt(self.pos, None);
+        self.pos = pos;
         
 class king(piece):
     char = ['K','k'];
@@ -329,17 +329,23 @@ class pawn(piece):
             # Check whether the pawn has reached the end of board
             while(True):
                 try:
-                    pieace_in = int(input("Change pawn to 1: queen, 2: knight, 3: bishop, 4: rook: "));
-                    obj = queen(self.board,pos,self.team);
-                    if(pieace_in == 2):
-                        obj = knight(self.board,pos,self.team);
-                    if(pieace_in == 3):
-                        obj = bishop(self.board,pos,self.team);
-                    if(pieace_in == 4):
-                        obj = rook(self.board,pos,self.team);
-                        
-                    self.board.setPieceAt(pos,obj);
-                    break;
+
+
+                    if self.team == 1:
+                        self.board.setPieceAt(pos,queen(self.board, pos, self.team));
+                        break;
+                    else:
+                        piece_in = int(input("Change pawn to 1: queen, 2: knight, 3: bishop, 4: rook: "));
+                        obj = queen(self.board, pos, self.team);
+                        if(piece_in == 2):
+                            obj = knight(self.board,pos,self.team);
+                        if(piece_in == 3):
+                            obj = bishop(self.board,pos,self.team);
+                        if(piece_in == 4):
+                            obj = rook(self.board,pos,self.team);
+
+                        self.board.setPieceAt(pos,obj);
+                        break;
                 except Exception:
                     pass;
         return r,r2;
@@ -449,6 +455,7 @@ class chessboard:
     background = pygame.image.load("chessbg.png");
     winner = -1;
     lastPiece = None;
+    firstBlack = True;
     # threatField is used to calculate if
     # pieces on different fields are threatened
     
@@ -500,7 +507,7 @@ class chessboard:
                 i.afterUpdate();
     
     def setBoard(self,board):
-        # Initializes the board
+        # Sets the board to a state
         for i,v in enumerate(board):
             board[i] = v;
     
@@ -613,40 +620,271 @@ class chessboard:
             if(i):
                 i.render(surface);
 
-
-#-------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------
 #                        ENGINE FUNCTION SECTION
+
+    # TODO: Random moves
+    # TODO: Simulated moves (depth 1)
+    # TODO: miniMax search (depth 2-3)
+    # TODO: Positional evaluation
     def computerMove(self):
-        move_list = self.generateLegalMoves();
-        move_tuple = self.pickMove();
-        if move_tuple == None:
+        move_list = self.generateLegalMoves(True);
+        if(len(move_list) > 0):
+            currentBestMove = move_list[0];
+            currentBestEval = 9999.9;
+        else:
             return;
 
-        self.move(move_tuple[0], move_tuple[1]);
-        self.currentTeam = (self.currentTeam + 1) % 2;
+        for move in move_list:
+            piece = self.safeMove(move[0], move[1]);
 
-    def generateLegalMoves(self):
+            bestTuple = self.miniMax(1, 2, False);
+            if(bestTuple[0] < currentBestEval):
+                currentBestMove = move;
+                currentBestEval = bestTuple[0];
+
+            self.safeMove(move[1], move[0]);
+            if (piece):
+                # A piece was captured and needs to be reset
+                self.setPieceAt(move[1], piece);
+                piece.pos = move[1];
+
+        print('\n BEST MOVE FOUND: ' + str(currentBestMove));
+
+        self.move(currentBestMove[0], currentBestMove[1]);
+        self.currentTeam = (self.currentTeam + 1) % 2;
+        print(self)
+
+    # TODO: Raw value mappings, then positional mappings as well
+    def evaluatePosition(self):
+        if(self.winner != -1):
+            if (self.winner < 2):
+                if self.winner == 1:
+                    return -9999.9;
+                else:
+                    return 9999.9;
+            else:
+                return 0.0;
+
+        valueMapping = {'P': 10, 'N': 30, 'B': 30, 'R': 50, 'Q': 90, 'K': 900,
+                        'p':-10, 'n':-30, 'b':-30, 'r':-50, 'q':-90, 'k':-900};
+        positionalMapping = {'p':self.pawnPositional, 'n': self.knightPositional,
+                             'b':self.bishopPositional, 'r':self.rookPositional,
+                             'q':self.queenPositional};
+        evaluation = 0.0;
+        for piece in self.board:
+            if piece:
+                evaluation += valueMapping[str(piece)];
+                if piece.team == 1:
+                    lowerPiece = str(piece).lower();
+                    if lowerPiece in {'p','n','r','q'}:
+                        evaluation += - positionalMapping[lowerPiece](piece.pos, True);
+
+                else:
+                    lowerPiece = str(piece).lower();
+                    if lowerPiece in {'p','n','r','q'}:
+                        evaluation += positionalMapping[lowerPiece](piece.pos, False);
+
+        return evaluation;
+
+
+    # TODO: Applied to final layer of minimax
+    def finalDepthSearch(self, blackTurn):
+        move_list = self.generateLegalMoves(blackTurn);
+
+        if(len(move_list) == 0):
+            return None;
+        currentBestMove = move_list[0];
+
+        if blackTurn:
+            currentBestEval = 9999.9;
+            for move in move_list:
+                if self.board[pos2index(move[0])]:
+                    resultingEval = self.simulateMove(move[0], move[1]);
+                    if resultingEval < currentBestEval:
+                        currentBestMove = move;
+                        currentBestEval = resultingEval;
+        else:
+            currentBestEval = -9999.9;
+            for move in move_list:
+                if self.board[pos2index(move[0])]:
+                    resultingEval = self.simulateMove(move[0], move[1]);
+                    if resultingEval > currentBestEval:
+                        currentBestMove = move;
+                        currentBestEval = resultingEval;
+
+        return (currentBestEval, currentBestMove);
+
+
+    def miniMax(self, currentDepth, maxDepth, blackTurn):
+        if currentDepth == maxDepth:
+            return self.finalDepthSearch(blackTurn);
+
+        latestMoveOptions = self.generateLegalMoves(blackTurn);
+        if blackTurn:
+            # black's turn - aim for lower position evaluation
+            bestTuple = (9999.9, None);
+
+            for move in latestMoveOptions:
+                # Simulate the move
+                piece = self.safeMove(move[0], move[1]);
+
+                # Search deeper, find maximizing move in next level
+                miniMaxTuple = self.miniMax(currentDepth + 1, maxDepth, not blackTurn);
+                if miniMaxTuple and bestTuple and miniMaxTuple[0] < bestTuple[0]:
+                    bestTuple = miniMaxTuple;
+
+                # Undo the move
+                self.safeMove(move[1], move[0]);
+                if (piece):
+                    # A piece was captured and needs to be reset
+                    self.setPieceAt(move[1], piece);
+                    piece.pos = move[1];
+
+            return bestTuple;
+
+        else:
+            # white's turn - aim for higher position evaluation
+            bestTuple = (-9999.9, None);
+            for move in latestMoveOptions:
+                # Simulate the move
+                piece = self.safeMove(move[0], move[1]);
+
+                # Search deeper, find maximizing move in next level
+                miniMaxTuple = self.miniMax(currentDepth + 1, maxDepth, not blackTurn);
+                if miniMaxTuple and bestTuple and miniMaxTuple[0] > bestTuple[0]:
+                    bestTuple = miniMaxTuple;
+
+                # Undo the move
+                self.safeMove(move[1], move[0]);
+                if (piece):
+                    # A piece was captured and needs to be reset
+                    self.setPieceAt(move[1], piece);
+                    piece.pos = move[1];
+
+            return bestTuple;
+
+    # TODO: Used before minimax
+    def simulateMove(self, pos1, pos2):
+        # simulate move, restore game state if necessary
+        piece = self.safeMove(pos1, pos2);
+        eval = self.evaluatePosition();
+        self.safeMove(pos2, pos1);
+
+        if (piece):
+            # A piece was captured and needs to be reset
+            self.setPieceAt(pos2, piece);
+            piece.pos = pos2;
+
+        return eval;
+
+    # TODO: Make right after random; move that is impermanent
+    def safeMove(self, pos1, pos2):
+        # Moves a piece from position one to position two
+        b1 = self.board[pos2index(pos1)];  # grab piece at b1
+        if b1:
+            if(self.board[pos2index(pos2)]):  # if a piece will be captured by this move
+                capturedPiece = self.board[pos2index(pos2)];
+                b1.safeMoveTo(pos2);
+                return capturedPiece;
+            else:
+                b1.safeMoveTo(pos2);
+                return None;
+
+    # TODO: Add turn determiner
+    def generateLegalMoves(self, blackTurn):
         move_list = []
         for piece in self.board:
             if piece:
-                if self.currentTeam:
+                if blackTurn:
                     # BLACK TURN
                     if str(piece) in {'p', 'n', 'b', 'r', 'q', 'k'}:
                         for destination in piece.validMoves:
-                            move_list.append((piece.pos, destination));
+                            if destination[0] >= 0 and destination[1] >= 0:
+                                move_list.append((piece.pos, destination));
                 else:
                     # WHITE TURN
                     if str(piece) in {'P', 'N', 'B', 'R', 'Q', 'K'}:
                         for destination in piece.validMoves:
-                            move_list.append((piece.pos, destination));
+                            if destination[0] >= 0 and destination[1] >= 0:
+                                move_list.append((piece.pos, destination));
 
         return move_list;
 
-    def pickMove(self):
-        move_list = self.generateLegalMoves();
-        return random.choice(move_list) if len(move_list) > 0 else None;
+    # TODO: positional piece functions, implemented last
+    def pawnPositional(self, pos, black):
+        grid = \
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+             5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0,
+             1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0,
+             0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5,
+             0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0,
+             0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5,
+             0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5,
+             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+        if not black:
+            grid.reverse();
+        return grid[pos2index(pos)];
 
-#------------------------------------------------------------------
+    def knightPositional(self, pos, black):
+        grid = \
+            [-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0,
+             -4.0, -2.0, 0.0, 0.0, 0.0, 0.0, -2.0, -4.0,
+             -3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0,
+             -3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0,
+             -3.0, 0.0, 1.5, 2.0, 2.0, 1.5, 0.0, -3.0,
+             -3.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -3.0,
+             -4.0, -2.0, 0.0, 0.5, 0.5, 0.0, -2.0, -4.0,
+             -5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0];
+        if not black:
+            grid.reverse();
+        return grid[pos2index(pos)];
+
+    def bishopPositional(self, pos, black):
+        grid = \
+            [-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0,
+             -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0,
+             -1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0,
+             -1.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, -1.0,
+             -1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, -1.0,
+             -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0,
+             -1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, -1.0,
+             -2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0];
+        if not black:
+            grid.reverse();
+        return grid[pos2index(pos)];
+
+    def rookPositional(self, pos, black):
+        grid = \
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+             0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5,
+             -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5,
+             -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5,
+             -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5,
+             -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5,
+             -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5,
+             0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0];
+        if not black:
+            grid.reverse();
+        return grid[pos2index(pos)];
+
+    def queenPositional(self, pos, black):
+        grid = \
+            [-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0,
+             -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0,
+             -1.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -1.0,
+             -0.5, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -0.5,
+             0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -0.5,
+             -1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, -1.0,
+             -1.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, -1.0,
+             -2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0];
+        if not black:
+            grid.reverse();
+        return grid[pos2index(pos)];
+
+# ----------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------
     def __str__(self):
         o = "   ";
         for i in range(8):
@@ -708,7 +946,6 @@ def main():
     mOffset = (0,0);
     print(chessGame);
     while(runGame):
-        blackMove = False
         mPos = pygame.mouse.get_pos();
         for event in pygame.event.get():
             if(event.type == pygame.QUIT):
@@ -735,13 +972,16 @@ def main():
                 if(pieceInHand and not chessGame.currentTeam):
                     if(chessGame.move(pieceInHand.pos,(int(mPos[0]/45),int(mPos[1]/45)))):
                         print(chessGame);
-                        print("Current player: {}".format("black" if chessGame.currentTeam else "white"));
-                        print('--- MOVING BLACK ---')
-                        chessGame.computerMove();
-                        chessGame.currentTeam = (chessGame.currentTeam + 1) %2;
 
-                        print();
-                        print("Current player: {}".format("black" if chessGame.currentTeam else "white"));
+                        if chessGame.winner == -1:
+                            print("Current player: {}".format("black" if chessGame.currentTeam else "white"));
+                            print('--- MOVING BLACK ---')
+                            chessGame.computerMove();
+                            chessGame.currentTeam = (chessGame.currentTeam + 1) %2;
+                            print();
+                            print("Current player: {}".format("black" if chessGame.currentTeam else "white"));
+
+                        chessGame.renderPieces(display);
 
                     pieceInHand.canRender = True;
                     pieceInHand = None;

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6df5de86-c35e-4ecb-a98d-2581eed4db1f" name="Default Changelist" comment="" />
+    <list default="true" id="6df5de86-c35e-4ecb-a98d-2581eed4db1f" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chess.py" beforeDir="false" afterPath="$PROJECT_DIR$/chess.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,18 +42,45 @@
         </counts>
       </usages-collector>
     </session>
+    <session id="296491320">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="6" />
+          <entry key="project.open.time.0" value="1" />
+          <entry key="project.open.time.3" value="6" />
+          <entry key="project.opened" value="7" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="py" value="10225" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="Python" value="10225" />
+        </counts>
+      </usages-collector>
+    </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/chess.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+            <state relative-caret-position="167">
+              <caret line="998" column="54" lean-forward="true" selection-start-line="998" selection-start-column="54" selection-end-line="998" selection-end-column="54" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
-                <marker date="1542227193234" expanded="true" signature="23453:23700" ph="..." />
-                <marker date="1542227193234" expanded="true" signature="23729:23738" ph="..." />
+                <marker date="1542610920655" expanded="true" signature="26115:27083" ph="..." />
+                <marker date="1542610920655" expanded="true" signature="27136:29017" ph="..." />
+                <marker date="1542610920655" expanded="true" signature="29052:29061" ph="..." />
+                <marker date="1542610920655" expanded="true" signature="29052:29467" ph="..." />
+                <marker date="1542610920655" expanded="true" signature="30907:31448" ph="..." />
+                <marker date="1542610920655" expanded="true" signature="32048:32054" ph="..." />
+                <marker date="1542610920655" expanded="true" signature="32093:32656" ph="..." />
+                <marker date="1542610920655" expanded="true" signature="32693:33237" ph="..." />
+                <marker date="1542610920655" expanded="true" signature="33275:33833" ph="..." />
               </folding>
             </state>
           </provider>
@@ -62,18 +92,30 @@
     <findStrings>
       <find>str2pos</find>
       <find>in1</find>
-      <find>move</find>
       <find>moveto</find>
-      <find>print</find>
       <find>chessboard</find>
-      <find>validmoves</find>
-      <find>generate</find>
       <find>piece</find>
       <find>currentTeam</find>
       <find>currentTeam + 1</find>
       <find>threatenedBy</find>
       <find>threatfield</find>
+      <find>board</find>
+      <find>undo</find>
+      <find>swap</find>
+      <find>moveTo</find>
+      <find>print</find>
+      <find>move</find>
+      <find>move(</find>
+      <find>validMoves</find>
+      <find>setPieceAt</find>
+      <find>knight</find>
+      <find>validmoves</find>
+      <find>generate</find>
+      <find>safe</find>
     </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -82,11 +124,12 @@
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="837" />
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="x" value="925" />
     <option name="width" value="1005" />
     <option name="height" value="1040" />
   </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
@@ -107,7 +150,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../chess/kivy-chess" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -163,15 +206,15 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="670" y="0" width="804" height="832" extended-state="0" />
+    <frame x="-7" y="-7" width="1550" height="838" extended-state="7" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.0026075619" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.0013218771" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.28612304" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.28936172" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -200,12 +243,19 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/chess.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+        <state relative-caret-position="167">
+          <caret line="998" column="54" lean-forward="true" selection-start-line="998" selection-start-column="54" selection-end-line="998" selection-end-column="54" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
-            <marker date="1542227193234" expanded="true" signature="23453:23700" ph="..." />
-            <marker date="1542227193234" expanded="true" signature="23729:23738" ph="..." />
+            <marker date="1542610920655" expanded="true" signature="26115:27083" ph="..." />
+            <marker date="1542610920655" expanded="true" signature="27136:29017" ph="..." />
+            <marker date="1542610920655" expanded="true" signature="29052:29061" ph="..." />
+            <marker date="1542610920655" expanded="true" signature="29052:29467" ph="..." />
+            <marker date="1542610920655" expanded="true" signature="30907:31448" ph="..." />
+            <marker date="1542610920655" expanded="true" signature="32048:32054" ph="..." />
+            <marker date="1542610920655" expanded="true" signature="32093:32656" ph="..." />
+            <marker date="1542610920655" expanded="true" signature="32693:33237" ph="..." />
+            <marker date="1542610920655" expanded="true" signature="33275:33833" ph="..." />
           </folding>
         </state>
       </provider>
